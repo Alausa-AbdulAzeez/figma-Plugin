@@ -1,4 +1,8 @@
 const Product = require("../models/productModel");
+const NodeCache = require("node-cache");
+
+// Initialize the NodeCache instance
+const cache = new NodeCache({ stdTTL: 3600 }); // Set the cache expiration time to 1 hour
 
 // CREATE SINGLE PRODUCT
 const addSingleProduct = async (req, res) => {
@@ -71,12 +75,6 @@ const addMultipleProducts = async (req, res) => {
     res.status(500).json(error);
   }
 };
-
-module.exports = {
-  addSingleProduct,
-  addMultipleProducts,
-};
-
 // GET PAGINATED PRODUCTS
 const getAllProducts = async (req, res) => {
   try {
@@ -107,4 +105,10 @@ const getAllProducts = async (req, res) => {
     console.error("Failed to fetch products", error);
     res.status(500).json({ error: "Failed to fetch products" });
   }
+};
+
+module.exports = {
+  addSingleProduct,
+  addMultipleProducts,
+  getAllProducts,
 };
