@@ -3,11 +3,15 @@ const mongoose = require("mongoose");
 
 const productRoute = require("./routes/productRoute");
 const dotenv = require("dotenv");
+const NodeCache = require("node-cache");
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
 const app = express();
+
+// Initialize the NodeCache instance
+const cache = new NodeCache({ stdTTL: 3600 }); // Set the cache expiration time to 1 hour
 app.use(express.json());
 
 // ROUTES

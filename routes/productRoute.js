@@ -12,4 +12,7 @@ router.post("/addProduct", addSingleProduct);
 // CREATE MULTIPLE PRODUCTS
 router.post("/addMultipleProducts", addMultipleProducts);
 
+// CREATE MULTIPLE PRODUCTS
+router.get("/products", addMultipleProducts);
+
 module.exports = router;

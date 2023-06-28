@@ -45,8 +45,6 @@ const addMultipleProducts = async (req, res) => {
 
     for (let index = 0; index < products.length; index++) {
       const { image, title, price } = products[index];
-      console.log(products);
-      console.log(products[index]);
 
       // Validate image, title, and price fields
       if (!image || !title || !price) {
@@ -63,11 +61,12 @@ const addMultipleProducts = async (req, res) => {
 
     const createdProducts = await Product.create(products);
 
+    // CHECK IF THE PRODUCTS WERE SECCESSFULLY ADDED TO THE DB
     if (!createdProducts) {
       res.status(400).json("An error occured while creating the products");
     }
 
-    res.status(201).json(createdProducts);
+    res.status(201).json("Products have been added successfully");
   } catch (error) {
     res.status(500).json(error);
   }
@@ -76,4 +75,36 @@ const addMultipleProducts = async (req, res) => {
 module.exports = {
   addSingleProduct,
   addMultipleProducts,
+};
+
+// GET PAGINATED PRODUCTS
+const getAllProducts = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const cacheKey = `products-page:${page}-limit:${limit}`;
+
+    // Check the cache
+    const cachedData = cache.get(cacheKey);
+    if (cachedData) {
+      console.log("Serving products from cache");
+      return res.json(cachedData);
+    }
+
+    // Fetch data from MongoDB and paginate
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const products = await Product.find().skip(skip).limit(parseInt(limit));
+
+    // VALIDATE PRODUCTS
+    if (!products) {
+      res.status(400).json("An error occured while fetching the products");
+    }
+
+    // Store data in the cache
+    cache.set(cacheKey, products);
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Failed to fetch products", error);
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
 };
