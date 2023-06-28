@@ -33,6 +33,47 @@ const addSingleProduct = async (req, res) => {
   }
 };
 
+// CREATE MULTIPLE PRODUCTS
+const addMultipleProducts = async (req, res) => {
+  try {
+    const products = await req.body;
+
+    // CHECK IF THE DATA PASSED IS AN ARRAY OR AN EMPTY ARRAY
+    if (!Array.isArray(products) || products.length === 0) {
+      res.status(400).send("Invalid datatype. Kindly pass an array datatype");
+    }
+
+    for (let index = 0; index < products.length; index++) {
+      const { image, title, price } = products[index];
+      console.log(products);
+      console.log(products[index]);
+
+      // Validate image, title, and price fields
+      if (!image || !title || !price) {
+        res
+          .status(400)
+          .send(
+            `Invalid product detected. Please check the image, title, and price fields. Kindly check the product at index ${[
+              index,
+            ]} in the array`
+          );
+        return;
+      }
+    }
+
+    const createdProducts = await Product.create(products);
+
+    if (!createdProducts) {
+      res.status(400).json("An error occured while creating the products");
+    }
+
+    res.status(201).json(createdProducts);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
 module.exports = {
   addSingleProduct,
+  addMultipleProducts,
 };
