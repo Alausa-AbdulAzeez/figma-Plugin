@@ -75,11 +75,13 @@ const addMultipleProducts = async (req, res) => {
     res.status(500).json(error);
   }
 };
+
 // GET PAGINATED PRODUCTS
 const getAllProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const cacheKey = `products-page:${page}-limit:${limit}`;
+    const { page = 1, limit = 10, search } = req.query;
+    const trimmedSearch = search ? search.trim() : "";
+    const cacheKey = `products-page:${page}-limit:${limit}-search:${trimmedSearch}`;
 
     // Check the cache
     const cachedData = cache.get(cacheKey);
@@ -88,9 +90,22 @@ const getAllProducts = async (req, res) => {
       return res.json(cachedData);
     }
 
+    // Construct the query object based on search parameter
+    const query = search
+      ? {
+          $or: [
+            { category: { $regex: search, $options: "i" } }, // Case-insensitive match for category
+            { title: { $regex: search, $options: "i" } }, // Case-insensitive match for name
+          ],
+        }
+      : {};
+
     // Fetch data from MongoDB and paginate
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    const products = await Product.find().skip(skip).limit(parseInt(limit));
+    console.log(query);
+    const products = await Product.find(query)
+      .skip(skip)
+      .limit(parseInt(limit));
 
     // VALIDATE PRODUCTS
     if (!products) {
@@ -107,8 +122,22 @@ const getAllProducts = async (req, res) => {
   }
 };
 
+// PRODUCT SEARCH
+const getSearchedProducts = async (req, res) => {
+  const { search } = req?.query;
+  console.log(search);
+  res.status(200).json(search);
+
+  try {
+  } catch (error) {
+    console.log(error);
+    res.status(500).json("An error occured");
+  }
+};
+
 module.exports = {
   addSingleProduct,
   addMultipleProducts,
   getAllProducts,
+  getSearchedProducts,
 };
