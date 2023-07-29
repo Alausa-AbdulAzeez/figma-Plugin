@@ -100,6 +100,9 @@ const getAllProducts = async (req, res) => {
         }
       : {};
 
+    // Fetch total count of products for pagination calculation
+    const totalCount = await Product.countDocuments(query);
+
     // Fetch data from MongoDB and paginate
     const skip = (parseInt(page) - 1) * parseInt(limit);
     console.log(query);
@@ -111,11 +114,11 @@ const getAllProducts = async (req, res) => {
     if (!products) {
       res.status(400).json("An error occured while fetching the products");
     }
-
     // Store data in the cache
-    cache.set(cacheKey, products);
+    cache.set(cacheKey, { products, totalCount });
 
-    res.status(200).json(products);
+    // res.status(200).json(products);
+    res.status(200).json({ products, totalCount });
   } catch (error) {
     console.error("Failed to fetch products", error);
     res.status(500).json({ error: "Failed to fetch products" });
